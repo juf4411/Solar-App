@@ -23,3 +23,20 @@ Das Dashboard soll im Endausbau PV-Daten einer Anlage anzeigen.
 ## Datenquelle
 
 Die echte PV-Datenquelle wird spaeter ueber `PV_DATA_URL` konfiguriert. Bis dahin verwendet das Projekt Mock-up-Daten.
+
+## Monitoring
+
+Prometheus und Grafana sind als optionales Monitoring-Grundgeruest vorbereitet.
+
+| Tool | Aufgabe |
+| --- | --- |
+| Prometheus | ruft `/metrics` der Flask-App ab |
+| Grafana | visualisiert Prometheus-Metriken |
+
+Geplante Prometheus-Metriken:
+
+| Metrik | Beschreibung |
+| --- | --- |
+| `solar_app_current_power_w` | aktuelle PV-Leistung |
+| `solar_app_average_power_w` | durchschnittliche PV-Leistung |
+| `solar_app_daily_energy_kwh` | Tagesenergie |

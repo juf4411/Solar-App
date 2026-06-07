@@ -50,6 +50,19 @@ py -m ruff check .
 docker compose up --build
 ```
 
+Docker Compose startet optional auch Prometheus und Grafana:
+
+- App: `http://localhost:5000`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
+
+Grafana Login:
+
+- Benutzer: `admin`
+- Passwort: `admin`
+
+Prometheus sammelt die Metriken der App unter `/metrics`. Grafana nutzt Prometheus als Datenquelle.
+
 ## Dokumentation
 
 - `docs/DASHBOARD_SPEZIFIKATION.md`

@@ -2,12 +2,17 @@
 
 import os
 
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, Response, jsonify, render_template_string
+from prometheus_client import CONTENT_TYPE_LATEST, Gauge, generate_latest
 
 from solar_app.calculations.calculations import calculate_dashboard_kpis
 from solar_app.data_cleaning.cleaning import clean_pv_record
 from solar_app.data_fetcher.fetcher import fetch_current_pv_values
 from solar_app.data_storage.storage import load_records, save_record
+
+CURRENT_POWER = Gauge("solar_app_current_power_w", "Current PV power in watts")
+AVERAGE_POWER = Gauge("solar_app_average_power_w", "Average PV power in watts")
+DAILY_ENERGY = Gauge("solar_app_daily_energy_kwh", "PV energy today in kWh")
 
 DASHBOARD_TEMPLATE = """
 <!doctype html>
@@ -49,7 +54,18 @@ def collect_pipeline() -> dict:
     raw_record = fetch_current_pv_values(source_url)
     cleaned_record = clean_pv_record(raw_record)
     save_record(cleaned_record, storage_path)
-    return calculate_dashboard_kpis(load_records(storage_path))
+    kpis = calculate_dashboard_kpis(load_records(storage_path))
+    update_metrics(kpis)
+    return kpis
+
+
+def update_metrics(kpis: dict) -> None:
+    """Publish the most important KPIs for Prometheus."""
+
+    latest = kpis["latest"] or {}
+    CURRENT_POWER.set(float(latest.get("power_w", 0)))
+    AVERAGE_POWER.set(float(kpis["average_power_w"]))
+    DAILY_ENERGY.set(float(kpis["energy_today_kwh"]))
 
 
 def create_app() -> Flask:
@@ -71,5 +87,10 @@ def create_app() -> Flask:
     @app.get("/api/kpis")
     def api_kpis():
         return jsonify(collect_pipeline())
+
+    @app.get("/metrics")
+    def metrics():
+        collect_pipeline()
+        return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
     return app
