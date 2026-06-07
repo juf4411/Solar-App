@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <rect width="900" height="520" fill="#eef3f1"/>
+  <rect x="35" y="35" width="830" height="450" rx="8" fill="#ffffff" stroke="#dbe5e1"/>
+  <text x="70" y="90" font-family="Arial" font-size="32" font-weight="700" fill="#1e2a2f">Solar-App Dashboard</text>
+  <text x="70" y="125" font-family="Arial" font-size="15" fill="#6c7b80">Grundgeruest fuer PV-Kennzahlen und Diagramme</text>
+  <rect x="70" y="160" width="220" height="110" rx="8" fill="#f5f8f7" stroke="#dbe5e1"/>
+  <rect x="340" y="160" width="220" height="110" rx="8" fill="#f5f8f7" stroke="#dbe5e1"/>
+  <rect x="610" y="160" width="220" height="110" rx="8" fill="#f5f8f7" stroke="#dbe5e1"/>
+  <text x="95" y="195" font-family="Arial" font-size="15" fill="#6c7b80">Aktuelle Leistung</text>
+  <text x="95" y="240" font-family="Arial" font-size="34" font-weight="700" fill="#1e2a2f">2450 W</text>
+  <text x="365" y="195" font-family="Arial" font-size="15" fill="#6c7b80">Mittelwert</text>
+  <text x="365" y="240" font-family="Arial" font-size="34" font-weight="700" fill="#1e2a2f">2100 W</text>
+  <text x="635" y="195" font-family="Arial" font-size="15" fill="#6c7b80">Energie heute</text>
+  <text x="635" y="240" font-family="Arial" font-size="34" font-weight="700" fill="#1e2a2f">18.4 kWh</text>
+  <rect x="70" y="315" width="760" height="130" rx="8" fill="#f5f8f7" stroke="#dbe5e1"/>
+  <polyline points="110,415 190,390 270,405 350,360 430,340 510,355 590,330 670,350 750,320" fill="none" stroke="#246bfe" stroke-width="5"/>
+  <text x="95" y="350" font-family="Arial" font-size="18" font-weight="700" fill="#1e2a2f">Geplantes Diagramm: PV-Leistung ueber Zeit</text>
+</svg>

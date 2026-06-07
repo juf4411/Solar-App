@@ -1,0 +1,14 @@
+services:
+  solar-app:
+    build: .
+    container_name: solar-app
+    environment:
+      PV_DATA_URL: ""
+      STORAGE_PATH: /app/data/pv_values.json
+    ports:
+      - "5000:5000"
+    volumes:
+      - solar-data:/app/data
+
+volumes:
+  solar-data:

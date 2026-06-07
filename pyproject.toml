@@ -1,0 +1,31 @@
+[project]
+name = "solar-app"
+version = "0.1.0"
+description = "Grundgeruest fuer ein PV-Dashboard."
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=3.0.0",
+    "requests>=2.32.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+]
+dev = [
+    "ruff>=0.8.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["solar_app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
