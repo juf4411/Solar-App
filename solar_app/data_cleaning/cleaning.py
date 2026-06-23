@@ -13,7 +13,7 @@ FIELD_ALIASES = {
 
 
 def find_value(raw_record: dict[str, Any], aliases: tuple[str, ...], default: Any = None) -> Any:
-    """Sucht den ersten vorhandenen Wert aus mehreren moeglichen Feldnamen."""
+    """Sucht den ersten vorhandenen Wert aus mehreren möglichen Feldnamen."""
 
     for alias in aliases:
         if alias in raw_record and raw_record[alias] not in (None, ""):

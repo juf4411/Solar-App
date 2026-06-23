@@ -1,4 +1,4 @@
-"""Simple JSON storage stub for cleaned PV records."""
+"""Speichert bereinigte PV-Messwerte als JSON."""
 
 import json
 from pathlib import Path
@@ -6,10 +6,7 @@ from typing import Any
 
 
 def save_record(record: dict[str, Any], storage_path: str) -> None:
-    """Append one record to a JSON file.
-
-    TODO: Replace this with SQLite/PostgreSQL if the project needs real persistence.
-    """
+    """Hängt einen bereinigten Datensatz an eine JSON-Datei an."""
 
     path = Path(storage_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -19,7 +16,7 @@ def save_record(record: dict[str, Any], storage_path: str) -> None:
 
 
 def load_records(storage_path: str) -> list[dict[str, Any]]:
-    """Load all records from JSON storage."""
+    """Lädt alle gespeicherten PV-Messwerte aus der JSON-Datei."""
 
     path = Path(storage_path)
     if not path.exists():
