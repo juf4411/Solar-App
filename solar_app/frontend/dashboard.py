@@ -1,4 +1,4 @@
-"""Minimal Flask dashboard skeleton."""
+"""Minimaler Flask-Einstieg fuer Integrationstests."""
 
 import os
 
@@ -42,30 +42,30 @@ DASHBOARD_TEMPLATE = """
 
 
 def collect_pipeline() -> dict:
-    """Run the planned fetch-clean-store-calculate pipeline once."""
+    """Fuehrt Abruf, Bereinigung, Speicherung und Berechnung einmal aus."""
 
     source_url = os.getenv("PV_DATA_URL") or None
+    api_key = os.getenv("PV_API_KEY", "")
     storage_path = os.getenv("STORAGE_PATH", "data/pv_values.json")
-    raw_record = fetch_current_pv_values(source_url)
+    raw_record = fetch_current_pv_values(source_url, api_key)
     cleaned_record = clean_pv_record(raw_record)
     save_record(cleaned_record, storage_path)
     return calculate_dashboard_kpis(load_records(storage_path))
 
 
 def create_app() -> Flask:
-    """Create the Flask application."""
+    """Erstellt die Flask-Anwendung."""
 
     app = Flask(__name__)
 
     @app.get("/")
     def dashboard():
         kpis = collect_pipeline()
-        latest = kpis["latest"] or {}
         return render_template_string(
             DASHBOARD_TEMPLATE,
-            power=latest.get("power_w", 0),
+            power=kpis["current_production_w"],
             average=kpis["average_power_w"],
-            energy=kpis["energy_today_kwh"],
+            energy=kpis["daily_production_wh"] / 1000,
         )
 
     @app.get("/api/kpis")
