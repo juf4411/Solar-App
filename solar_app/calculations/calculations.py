@@ -1,4 +1,4 @@
-"""Berechnet Kennzahlen fuer das PV-Dashboard."""
+"""Berechnet Kennzahlen für das PV-Dashboard."""
 
 from typing import Any
 
@@ -20,7 +20,7 @@ def calculate_pv_ratio(production_wh: float, consumption_wh: float) -> float:
 
 
 def calculate_dashboard_kpis(records: list[dict[str, Any]]) -> dict[str, Any]:
-    """Erstellt alle Kennzahlen fuer das Dashboard."""
+    """Erstellt alle Kennzahlen für das Dashboard."""
 
     latest = records[-1] if records else None
     latest_or_empty = latest or {}

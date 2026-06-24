@@ -28,7 +28,7 @@ def fetch_current_pv_values(
 
 
 def select_current_record(payload: Any) -> dict[str, Any]:
-    """Waehlt aus der API-Antwort den aktuellsten Datensatz aus."""
+    """Wählt aus der API-Antwort den aktuellsten Datensatz aus."""
 
     if isinstance(payload, list):
         if not payload:

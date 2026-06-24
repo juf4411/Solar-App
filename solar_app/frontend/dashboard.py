@@ -1,4 +1,4 @@
-"""Flask-Dashboard fuer die Anzeige der PV-Daten."""
+"""Flask-Dashboard für die Anzeige der PV-Daten."""
 
 import os
 
@@ -160,13 +160,13 @@ DASHBOARD_TEMPLATE = """
 
 
 def get_storage_path() -> str:
-    """Gibt den konfigurierten Speicherpfad zurueck."""
+    """Gibt den konfigurierten Speicherpfad zurück."""
 
     return os.getenv("STORAGE_PATH", "data/pv_values.json")
 
 
 def collect_pipeline() -> dict:
-    """Fuehrt Abruf, Bereinigung, Speicherung und Berechnung einmal aus."""
+    """Führt Abruf, Bereinigung, Speicherung und Berechnung einmal aus."""
 
     source_url = os.getenv("PV_DATA_URL") or ""
     api_key = os.getenv("PV_API_KEY", "")
@@ -180,7 +180,7 @@ def collect_pipeline() -> dict:
 
 
 def create_app() -> Flask:
-    """Erstellt die Flask-Anwendung fuer das Dashboard."""
+    """Erstellt die Flask-Anwendung für das Dashboard."""
 
     app = Flask(__name__)
 
