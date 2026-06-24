@@ -129,7 +129,7 @@ DASHBOARD_TEMPLATE = """
 
         <section class="cards">
           <article class="card">
-            <span>Aktuelle Leistung</span>
+            <span>Momentanerzeugung</span>
             <strong class="cyan">{{ "%.1f"|format(power) }} W</strong>
           </article>
           <article class="card">
@@ -137,7 +137,7 @@ DASHBOARD_TEMPLATE = """
             <strong>{{ "%.1f"|format(average) }} W</strong>
           </article>
           <article class="card">
-            <span>Energie heute</span>
+            <span>Tageserzeugung</span>
             <strong class="yellow">{{ "%.1f"|format(energy) }} kWh</strong>
           </article>
           <article class="card">
@@ -168,10 +168,11 @@ def get_storage_path() -> str:
 def collect_pipeline() -> dict:
     """Fuehrt Abruf, Bereinigung, Speicherung und Berechnung einmal aus."""
 
-    source_url = os.getenv("PV_DATA_URL") or None
+    source_url = os.getenv("PV_DATA_URL") or ""
+    api_key = os.getenv("PV_API_KEY", "")
     storage_path = get_storage_path()
 
-    raw_record = fetch_current_pv_values(source_url)
+    raw_record = fetch_current_pv_values(source_url, api_key)
     cleaned_record = clean_pv_record(raw_record)
     save_record(cleaned_record, storage_path)
 
@@ -186,13 +187,12 @@ def create_app() -> Flask:
     @app.get("/")
     def dashboard():
         kpis = collect_pipeline()
-        latest = kpis["latest"] or {}
 
         return render_template_string(
             DASHBOARD_TEMPLATE,
-            power=latest.get("power_w", 0),
+            power=kpis["current_production_w"],
             average=kpis["average_power_w"],
-            energy=kpis["energy_today_kwh"],
+            energy=kpis["daily_production_wh"] / 1000,
             record_count=kpis["record_count"],
         )
 
