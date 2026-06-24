@@ -44,7 +44,7 @@ DASHBOARD_TEMPLATE = """
 def collect_pipeline() -> dict:
     """Fuehrt Abruf, Bereinigung, Speicherung und Berechnung einmal aus."""
 
-    source_url = os.getenv("PV_DATA_URL") or None
+    source_url = os.getenv("PV_DATA_URL") or ""
     api_key = os.getenv("PV_API_KEY", "")
     storage_path = os.getenv("STORAGE_PATH", "data/pv_values.json")
     raw_record = fetch_current_pv_values(source_url, api_key)
