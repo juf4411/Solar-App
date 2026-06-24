@@ -2,9 +2,12 @@ services:
   solar-app:
     build: .
     container_name: solar-app
+    env_file:
+      - .env
     environment:
-      PV_DATA_URL: ""
       STORAGE_PATH: /app/data/pv_values.json
+      FETCH_INTERVAL_SECONDS: "10"
+      ENABLE_BACKGROUND_FETCH: "true"
     ports:
       - "5000:5000"
     volumes:

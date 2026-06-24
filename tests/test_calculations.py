@@ -1,6 +1,7 @@
 from solar_app.calculations.calculations import (
     calculate_average_power,
     calculate_dashboard_kpis,
+    calculate_period_total,
     calculate_pv_ratio,
 )
 
@@ -27,12 +28,14 @@ def test_calculate_dashboard_kpis():
     kpis = calculate_dashboard_kpis(
         [
             {
+                "timestamp": "2026-06-07T08:00:00Z",
                 "production_power_w": 100.0,
                 "consumption_power_w": 200.0,
                 "daily_production_wh": 2500.0,
                 "daily_consumption_wh": 5000.0,
             },
             {
+                "timestamp": "2026-06-07T12:00:00Z",
                 "production_power_w": 300.0,
                 "consumption_power_w": 400.0,
                 "daily_production_wh": 4000.0,
@@ -47,4 +50,32 @@ def test_calculate_dashboard_kpis():
     assert kpis["current_consumption_w"] == 400.0
     assert kpis["daily_production_wh"] == 4000.0
     assert kpis["daily_consumption_wh"] == 8000.0
+    assert kpis["monthly_production_wh"] == 4000.0
+    assert kpis["monthly_consumption_wh"] == 8000.0
+    assert kpis["yearly_production_wh"] == 4000.0
+    assert kpis["yearly_consumption_wh"] == 8000.0
     assert kpis["daily_pv_ratio_percent"] == 50.0
+    assert kpis["monthly_pv_ratio_percent"] == 50.0
+    assert kpis["yearly_pv_ratio_percent"] == 50.0
+    assert len(kpis["chart_points"]) == 2
+
+
+def test_calculate_period_total_sums_daily_max_values():
+    records = [
+        {
+            "timestamp": "2026-06-06T10:00:00Z",
+            "daily_production_wh": 1000.0,
+        },
+        {
+            "timestamp": "2026-06-06T15:00:00Z",
+            "daily_production_wh": 2500.0,
+        },
+        {
+            "timestamp": "2026-06-07T12:00:00Z",
+            "daily_production_wh": 4000.0,
+        },
+    ]
+
+    assert calculate_period_total(records, "daily_production_wh", "day") == 4000.0
+    assert calculate_period_total(records, "daily_production_wh", "month") == 6500.0
+    assert calculate_period_total(records, "daily_production_wh", "year") == 6500.0

@@ -1,26 +1,31 @@
 # Dashboard-Spezifikation
 
-Das Dashboard zeigt PV-Daten der Hochschul-Anlage in einer Flask-Webanwendung.
+Das Dashboard zeigt PV-Daten der Hochschul-Anlage in einer Flask-Webanwendung. Die Daten werden über die konfigurierte URL abgerufen, bereinigt, gespeichert und anschließend für die Anzeige vorbereitet.
 
 ## Kennzahlen
 
-- Aktuelle PV-Leistung
+- Momentanerzeugung und Momentanverbrauch
+- Tageserzeugung und Tagesverbrauch
+- Monatserzeugung und Monatsverbrauch
+- Jahreserzeugung und Jahresverbrauch
+- Verhältnis Verbrauch aus PV zu Gesamtverbrauch für Tag, Monat und Jahr
 - Durchschnittliche PV-Leistung
-- Tagesenergie
-- Anzahl gespeicherter Datensaetze
+- Anzahl gespeicherter Datensätze
 
 ## Grafiken
 
-- Bereich fuer den Leistungsverlauf von Erzeugung und Verbrauch
+- Zeitverlauf der Tageserzeugung und des Tagesverbrauchs in einem Diagramm
+- Donutdiagramme für den PV-Anteil am Gesamtverbrauch für Tag, Monat und Jahr
 - Darstellung der wichtigsten Kennzahlen in KPI-Karten
 
 ## Datenquelle
 
-Die Datenquelle wird ueber Umgebungsvariablen gesetzt.
+Die Datenquelle wird über Umgebungsvariablen gesetzt.
 
 ```text
 PV_DATA_URL=https://jupyterhub-wi.rz.fh-ingolstadt.de:8443/data
 PV_API_KEY=hier_lokal_eintragen
-Der API-Key wird nur lokal in der Datei .env eingetragen und nicht ins Repository geschrieben.
+FETCH_INTERVAL_SECONDS=10
+```
 
-``
+Der API-Key wird nur lokal in der Datei `.env` eingetragen und nicht ins Repository geschrieben.

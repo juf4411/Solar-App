@@ -15,6 +15,7 @@ def test_dashboard_page_loads(monkeypatch, tmp_path):
     monkeypatch.setenv("STORAGE_PATH", str(tmp_path / "pv_values.json"))
     monkeypatch.setenv("PV_DATA_URL", "https://example.test/data")
     monkeypatch.setenv("PV_API_KEY", "test-key")
+    monkeypatch.setenv("ENABLE_BACKGROUND_FETCH", "false")
     monkeypatch.setattr(
         "solar_app.frontend.dashboard.fetch_current_pv_values",
         fake_pv_record,
@@ -25,13 +26,16 @@ def test_dashboard_page_loads(monkeypatch, tmp_path):
 
     assert response.status_code == 200
     assert "THI Energy Management Dashboard" in response.text
-    assert "Leistungsverlauf" in response.text
+    assert "Tagesverlauf Erzeugung und Verbrauch" in response.text
+    assert "Monatserzeugung" in response.text
+    assert "Jahresverbrauch" in response.text
 
 
 def test_kpi_api_returns_json(monkeypatch, tmp_path):
     monkeypatch.setenv("STORAGE_PATH", str(tmp_path / "pv_values.json"))
     monkeypatch.setenv("PV_DATA_URL", "https://example.test/data")
     monkeypatch.setenv("PV_API_KEY", "test-key")
+    monkeypatch.setenv("ENABLE_BACKGROUND_FETCH", "false")
     monkeypatch.setattr(
         "solar_app.frontend.dashboard.fetch_current_pv_values",
         fake_pv_record,
@@ -42,3 +46,4 @@ def test_kpi_api_returns_json(monkeypatch, tmp_path):
 
     assert response.status_code == 200
     assert response.is_json
+    assert response.json["monthly_pv_ratio_percent"] > 0
