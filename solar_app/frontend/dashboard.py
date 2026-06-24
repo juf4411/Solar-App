@@ -1,8 +1,11 @@
-"""Flask-Dashboard fuer die Anzeige der PV-Daten."""
+
+
+"""Flask-Dashboard für die Anzeige der PV-Daten."""
 
 import os
 
-from flask import Flask, jsonify, render_template_string
+# url_for wurde hinzugefügt, um statische Dateien (Bilder) sauber zu verlinken
+from flask import Flask, jsonify, render_template_string, url_for
 
 from solar_app.calculations.calculations import calculate_dashboard_kpis
 from solar_app.data_cleaning.cleaning import clean_pv_record
@@ -48,25 +51,52 @@ DASHBOARD_TEMPLATE = """
       <h1>THI Energy Management Dashboard</h1>
       <p>PV-Erzeugung, Verbrauch und Eigenversorgung im Live-Monitoring</p>
 
+      <img src="/static/thi-campus.webp" alt="Technische Hochschule Ingolstadt" style="width: 100%; max-height: 320px; object-fit: cover; border-radius: 8px; margin: 20px 0;">
+
       <section class="grid">
         <article class="card">
           <span>Momentanerzeugung</span>
-          <strong>{{ "%.1f"|format(kpis.current_production_w) }} W</strong>
+          <strong id="current_production_w">{{ "%.1f"|format(kpis.current_production_w) }} W</strong>
         </article>
         <article class="card">
           <span>Momentanverbrauch</span>
-          <strong>{{ "%.1f"|format(kpis.current_consumption_w) }} W</strong>
+          <strong id="current_consumption_w">{{ "%.1f"|format(kpis.current_consumption_w) }} W</strong>
         </article>
         <article class="card">
           <span>Tageserzeugung</span>
-          <strong>{{ "%.1f"|format(kpis.daily_production_wh) }} Wh</strong>
+          <strong id="daily_production_wh">{{ "%.1f"|format(kpis.daily_production_wh) }} Wh</strong>
         </article>
         <article class="card">
           <span>PV-Anteil heute</span>
-          <strong>{{ "%.1f"|format(kpis.daily_pv_ratio_percent) }} %</strong>
+          <strong id="daily_pv_ratio_percent">{{ "%.1f"|format(kpis.daily_pv_ratio_percent) }} %</strong>
         </article>
       </section>
+      
+      <section class="card" style="margin-top: 16px;">
+        <h2>Leistungsverlauf</h2>
+        <p>Hier wird der Verlauf von PV-Erzeugung und Verbrauch dargestellt.</p>
+      </section>
     </main>
+
+    <script>
+      async function updateDashboard() {
+        try {
+          const response = await fetch('/api/kpis');
+          if (!response.ok) throw new Error('Netzwerk-Antwort war nicht ok');
+
+          const data = await response.json();
+
+          document.getElementById('current_production_w').textContent = data.current_production_w.toFixed(1) + ' W';
+          document.getElementById('current_consumption_w').textContent = data.current_consumption_w.toFixed(1) + ' W';
+          document.getElementById('daily_production_wh').textContent = data.daily_production_wh.toFixed(1) + ' Wh';
+          document.getElementById('daily_pv_ratio_percent').textContent = data.daily_pv_ratio_percent.toFixed(1) + ' %';
+        } catch (error) {
+          console.error('Fehler beim Abrufen der Live-Daten:', error);
+        }
+      }
+
+      setInterval(updateDashboard, 5000);
+    </script>
   </body>
 </html>
 """
@@ -94,7 +124,8 @@ def collect_pipeline() -> dict:
 def create_app() -> Flask:
     """Erstellt die Flask-Anwendung fuer das Dashboard."""
 
-    app = Flask(__name__)
+    # static_folder wird explizit definiert, damit das Bild aus solar_app/frontend/static geladen wird
+    app = Flask(__name__, static_folder="solar_app/frontend/static")
 
     @app.get("/")
     def dashboard():
