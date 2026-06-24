@@ -1,42 +1,26 @@
 # Dashboard-Spezifikation
 
-Das Dashboard soll im Endausbau PV-Daten einer Anlage anzeigen.
+Das Dashboard zeigt PV-Daten der Hochschul-Anlage in einer Flask-Webanwendung.
 
-## Geplante KPIs
+## Kennzahlen
 
-| KPI | Einheit | Beschreibung |
-| --- | --- | --- |
-| Aktuelle Leistung | W | Momentane PV-Leistung |
-| Tagesenergie | kWh | Bisher erzeugte Energie des Tages |
-| Mittelwert Leistung | W | Durchschnitt der gespeicherten Leistungswerte |
-| Temperatur | C | Temperaturwert aus der PV-Datenquelle |
-| Datenstatus | Text | Mock-up-Daten oder Echtdaten |
+- Momentanerzeugung
+- Momentanverbrauch
+- Tageserzeugung
+- Tagesverbrauch
+- PV-Anteil am Tagesverbrauch
+- Durchschnittliche PV-Leistung
 
-## Geplante Grafiken
+## Grafiken
 
-| Grafik | Beschreibung |
-| --- | --- |
-| Leistungsverlauf | Liniendiagramm der Leistung ueber Zeit |
-| Tagesertrag | Balken- oder Liniendiagramm fuer Energie |
-| KPI-Karten | kompakte Werte fuer aktuelle Leistung, Mittelwert und Tagesenergie |
+- Zeitverlauf von Erzeugung und Verbrauch
+- Darstellung des PV-Anteils
 
 ## Datenquelle
 
-Die echte PV-Datenquelle wird spaeter ueber `PV_DATA_URL` konfiguriert. Bis dahin verwendet das Projekt Mock-up-Daten.
+Die Datenquelle wird ueber Umgebungsvariablen gesetzt.
 
-## Monitoring
-
-Prometheus und Grafana sind als optionales Monitoring-Grundgeruest vorbereitet.
-
-| Tool | Aufgabe |
-| --- | --- |
-| Prometheus | ruft `/metrics` der Flask-App ab |
-| Grafana | visualisiert Prometheus-Metriken |
-
-Geplante Prometheus-Metriken:
-
-| Metrik | Beschreibung |
-| --- | --- |
-| `solar_app_current_power_w` | aktuelle PV-Leistung |
-| `solar_app_average_power_w` | durchschnittliche PV-Leistung |
-| `solar_app_daily_energy_kwh` | Tagesenergie |
+```text
+PV_DATA_URL=https://jupyterhub-wi.rz.fh-ingolstadt.de:8443/data
+PV_API_KEY=d1e88a3131ade56eac79c0f4ec84969a8759f99b67c7cb5bdd28d75752c752a6
+```
