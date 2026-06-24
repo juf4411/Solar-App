@@ -14,7 +14,7 @@ services:
     image: prom/prometheus:v2.54.1
     container_name: solar-prometheus
     command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--cogit nfig.file=/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
     volumes:
