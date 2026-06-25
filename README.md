@@ -73,3 +73,7 @@ http://localhost:5000
 - `docs/DASHBOARD_SPEZIFIKATION.md`
 - `docs/AUFGABENVERTEILUNG.md`
 - `docs/dashboard-mockup.svg`
+
+## Mitarbeit
+
+Änderungen werden über Pull Requests eingebracht. Die wichtigsten Regeln stehen in `CONTRIBUTING.md`.
