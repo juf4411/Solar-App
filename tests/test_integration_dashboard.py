@@ -27,6 +27,10 @@ def test_dashboard_page_loads(monkeypatch, tmp_path):
 
     assert response.status_code == 200
     assert "THI Energy Management Dashboard" in response.text
+    assert "Direkt auslesbare Metriken" in response.text
+    assert "Kumulierte Metriken" in response.text
+    assert 'data-view="direct"' in response.text
+    assert 'data-view="cumulative"' in response.text
     assert "Tagesverlauf Erzeugung und Verbrauch" in response.text
     assert "Monatserzeugung" in response.text
     assert "Jahresverbrauch" in response.text
