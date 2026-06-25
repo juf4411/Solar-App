@@ -31,9 +31,14 @@ def test_dashboard_page_loads(monkeypatch, tmp_path):
     assert "Kumulierte Metriken" in response.text
     assert 'data-view="direct"' in response.text
     assert 'data-view="cumulative"' in response.text
+    assert "thi-campus.jpg" in response.text
     assert "Tagesverlauf Erzeugung und Verbrauch" in response.text
     assert "Monatserzeugung" in response.text
     assert "Jahresverbrauch" in response.text
+
+    image_response = app.test_client().get("/static/thi-campus.jpg")
+    assert image_response.status_code == 200
+    assert image_response.content_type == "image/jpeg"
 
 
 def test_kpi_api_returns_json(monkeypatch, tmp_path):
