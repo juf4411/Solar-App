@@ -98,10 +98,45 @@ DASHBOARD_TEMPLATE = """
         box-shadow: 0 0 14px currentColor;
       }
 
+      .view-tabs {
+        display: inline-grid;
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+        gap: 6px;
+        margin-bottom: 18px;
+        padding: 6px;
+        background: rgba(5, 27, 28, 0.7);
+        border: 1px solid rgba(80, 177, 169, 0.48);
+        border-radius: 8px;
+      }
+
+      .tab-button {
+        border: 0;
+        border-radius: 6px;
+        padding: 12px 18px;
+        color: var(--muted);
+        background: transparent;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .tab-button.active {
+        color: #061f20;
+        background: linear-gradient(135deg, var(--cyan), var(--green));
+      }
+
       .grid {
         display: grid;
         grid-template-columns: repeat(12, 1fr);
         gap: 16px;
+      }
+
+      .dashboard-page {
+        display: none;
+      }
+
+      .dashboard-page.active {
+        display: grid;
       }
 
       .panel,
@@ -187,6 +222,10 @@ DASHBOARD_TEMPLATE = """
 
       .periods {
         grid-column: span 4;
+      }
+
+      .wide {
+        grid-column: 1 / -1;
       }
 
       .period-row {
@@ -338,6 +377,10 @@ DASHBOARD_TEMPLATE = """
           text-align: left;
         }
 
+        .view-tabs {
+          width: 100%;
+        }
+
         .hero,
         .flow,
         .periods,
@@ -386,7 +429,12 @@ DASHBOARD_TEMPLATE = """
         </p>
       </header>
 
-      <section class="grid">
+      <nav class="view-tabs" aria-label="Dashboard-Ansichten">
+        <button class="tab-button active" type="button" data-view="direct">Direkt</button>
+        <button class="tab-button" type="button" data-view="cumulative">Kumuliert</button>
+      </nav>
+
+      <section class="grid dashboard-page active" data-page="direct">
         {% if last_error %}
           <div class="error">
             Aktuelle Serverdaten konnten nicht geladen werden. Gespeicherte Werte bleiben sichtbar.
@@ -399,7 +447,7 @@ DASHBOARD_TEMPLATE = """
         </article>
 
         <section class="panel flow">
-          <h2>Aktueller Energiefluss</h2>
+          <h2>Direkt auslesbare Metriken</h2>
           <div class="flow-layout">
             <div class="donut" style="--value: {{ daily_ratio }}">
               <strong>{{ "%.1f"|format(daily_ratio) }}%</strong>
@@ -417,15 +465,75 @@ DASHBOARD_TEMPLATE = """
               </div>
               <div class="legend-row">
                 <span class="bullet green"></span>
-                <span>Mittelwert</span>
-                <strong>{{ "%.1f"|format(average_power_w / 1000) }} kW</strong>
+                <span>Gespeicherte Messwerte</span>
+                <strong>{{ record_count }}</strong>
               </div>
             </div>
           </div>
         </section>
 
         <section class="panel periods">
-          <h2>Erzeugung und Verbrauch</h2>
+          <h2>Live-Status</h2>
+          <div class="period-row">
+            <strong>Abruf</strong>
+            <div>
+              <span class="muted">Intervall</span>
+              <strong>{{ refresh_interval }} Sekunden</strong>
+              <div class="bar" style="--value: 100"><span></span></div>
+            </div>
+            <div>
+              <span class="muted">Datenstand</span>
+              <strong>{{ record_count }} Werte</strong>
+              <div class="bar yellow" style="--value: {{ 100 if record_count else 0 }}">
+                <span></span>
+              </div>
+            </div>
+            <strong class="cyan">{{ "OK" if not last_error else "Prüfen" }}</strong>
+          </div>
+          <div class="period-row">
+            <strong>Heute</strong>
+            <div>
+              <span class="muted">PV-Erzeugung</span>
+              <strong>{{ "%.1f"|format(current_production_w / 1000) }} kW</strong>
+              <div class="bar" style="--value: {{ daily_ratio }}"><span></span></div>
+            </div>
+            <div>
+              <span class="muted">Verbrauch</span>
+              <strong>{{ "%.1f"|format(current_consumption_w / 1000) }} kW</strong>
+              <div
+                class="bar yellow"
+                style="--value: {{ 100 - daily_ratio if daily_ratio < 100 else 0 }}"
+              >
+                <span></span>
+              </div>
+            </div>
+            <strong class="cyan">{{ "%.1f"|format(daily_ratio) }}%</strong>
+          </div>
+        </section>
+
+        <section class="cards">
+          <article class="card">
+            <span>Momentanerzeugung</span>
+            <strong class="cyan">{{ "%.1f"|format(current_production_w) }} W</strong>
+          </article>
+          <article class="card">
+            <span>Momentanverbrauch</span>
+            <strong class="yellow">{{ "%.1f"|format(current_consumption_w) }} W</strong>
+          </article>
+          <article class="card">
+            <span>PV-Anteil heute</span>
+            <strong>{{ "%.1f"|format(daily_ratio) }}%</strong>
+          </article>
+          <article class="card">
+            <span>Aktualisierung</span>
+            <strong>{{ refresh_interval }} s</strong>
+          </article>
+        </section>
+      </section>
+
+      <section class="grid dashboard-page" data-page="cumulative">
+        <section class="panel periods wide">
+          <h2>Kumulierte Metriken</h2>
           {% for row in period_rows %}
             <div class="period-row">
               <strong>{{ row.label }}</strong>
@@ -447,14 +555,6 @@ DASHBOARD_TEMPLATE = """
         </section>
 
         <section class="cards">
-          <article class="card">
-            <span>Momentanerzeugung</span>
-            <strong class="cyan">{{ "%.1f"|format(current_production_w) }} W</strong>
-          </article>
-          <article class="card">
-            <span>Momentanverbrauch</span>
-            <strong class="yellow">{{ "%.1f"|format(current_consumption_w) }} W</strong>
-          </article>
           <article class="card">
             <span>Tageserzeugung</span>
             <strong>{{ "%.1f"|format(daily_production_wh / 1000) }} kWh</strong>
@@ -478,6 +578,14 @@ DASHBOARD_TEMPLATE = """
           <article class="card">
             <span>Jahresverbrauch</span>
             <strong>{{ "%.1f"|format(yearly_consumption_wh / 1000) }} kWh</strong>
+          </article>
+          <article class="card">
+            <span>Mittelwert Erzeugung</span>
+            <strong>{{ "%.1f"|format(average_power_w / 1000) }} kW</strong>
+          </article>
+          <article class="card">
+            <span>PV-Anteil Jahr</span>
+            <strong>{{ "%.1f"|format(yearly_pv_ratio_percent) }}%</strong>
           </article>
         </section>
 
@@ -516,6 +624,26 @@ DASHBOARD_TEMPLATE = """
         </section>
       </section>
     </main>
+    <script>
+      const buttons = document.querySelectorAll(".tab-button");
+      const pages = document.querySelectorAll(".dashboard-page");
+
+      function showView(viewName) {
+        buttons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.view === viewName);
+        });
+        pages.forEach((page) => {
+          page.classList.toggle("active", page.dataset.page === viewName);
+        });
+        window.location.hash = viewName === "cumulative" ? "kumuliert" : "direkt";
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => showView(button.dataset.view));
+      });
+
+      showView(window.location.hash === "#kumuliert" ? "cumulative" : "direct");
+    </script>
   </body>
 </html>
 """
