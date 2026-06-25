@@ -152,18 +152,25 @@ DASHBOARD_TEMPLATE = """
 
       .hero {
         grid-column: span 4;
-        min-height: 300px;
+        min-height: 320px;
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
         overflow: hidden;
         background:
-          linear-gradient(rgba(6, 31, 32, 0.22), rgba(6, 31, 32, 0.82)),
-          linear-gradient(135deg, #164644, #0a2b2c);
+          linear-gradient(rgba(6, 31, 32, 0.12), rgba(6, 31, 32, 0.86)),
+          url("{{ url_for('static', filename='thi-campus.jpg') }}") center / cover no-repeat;
+        box-shadow: inset 0 -90px 100px rgba(6, 31, 32, 0.7);
       }
 
       .hero h2 {
         font-size: 28px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+      }
+
+      .hero .muted {
+        color: #d5fffb;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
       }
 
       .flow {
@@ -222,6 +229,10 @@ DASHBOARD_TEMPLATE = """
 
       .periods {
         grid-column: span 4;
+      }
+
+      .periods-wide {
+        grid-column: span 8;
       }
 
       .wide {
@@ -532,7 +543,12 @@ DASHBOARD_TEMPLATE = """
       </section>
 
       <section class="grid dashboard-page" data-page="cumulative">
-        <section class="panel periods wide">
+        <article class="panel hero">
+          <p class="muted">Campus-PV-Monitoring</p>
+          <h2>Technische Hochschule Ingolstadt</h2>
+        </article>
+
+        <section class="panel periods periods-wide">
           <h2>Kumulierte Metriken</h2>
           {% for row in period_rows %}
             <div class="period-row">
