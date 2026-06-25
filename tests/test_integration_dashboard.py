@@ -1,7 +1,7 @@
 from solar_app.frontend.dashboard import create_app
 
 
-def fake_pv_record(source_url, api_key):
+def fake_pv_record(source_url, api_key, verify_ssl=True):
     return {
         "timestamp": "2026-06-07T12:00:00Z",
         "production_power_w": 1000,
@@ -16,6 +16,7 @@ def test_dashboard_page_loads(monkeypatch, tmp_path):
     monkeypatch.setenv("PV_DATA_URL", "https://example.test/data")
     monkeypatch.setenv("PV_API_KEY", "test-key")
     monkeypatch.setenv("ENABLE_BACKGROUND_FETCH", "false")
+    monkeypatch.setenv("PV_VERIFY_SSL", "false")
     monkeypatch.setattr(
         "solar_app.frontend.dashboard.fetch_current_pv_values",
         fake_pv_record,
@@ -36,6 +37,7 @@ def test_kpi_api_returns_json(monkeypatch, tmp_path):
     monkeypatch.setenv("PV_DATA_URL", "https://example.test/data")
     monkeypatch.setenv("PV_API_KEY", "test-key")
     monkeypatch.setenv("ENABLE_BACKGROUND_FETCH", "false")
+    monkeypatch.setenv("PV_VERIFY_SSL", "false")
     monkeypatch.setattr(
         "solar_app.frontend.dashboard.fetch_current_pv_values",
         fake_pv_record,

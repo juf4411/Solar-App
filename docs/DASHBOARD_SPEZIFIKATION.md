@@ -26,6 +26,7 @@ Die Datenquelle wird über Umgebungsvariablen gesetzt.
 PV_DATA_URL=https://jupyterhub-wi.rz.fh-ingolstadt.de:8443/data
 PV_API_KEY=hier_lokal_eintragen
 FETCH_INTERVAL_SECONDS=10
+PV_VERIFY_SSL=false
 ```
 
 Der API-Key wird nur lokal in der Datei `.env` eingetragen und nicht ins Repository geschrieben.

@@ -3,6 +3,8 @@
 from typing import Any
 
 import requests
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
 
 
 def fetch_current_pv_values(
@@ -16,6 +18,8 @@ def fetch_current_pv_values(
         raise ValueError("Hier PV_DATA_URL eintragen")
     if not api_key:
         raise ValueError("Hier PV_API_KEY eintragen")
+    if not verify_ssl:
+        urllib3.disable_warnings(InsecureRequestWarning)
 
     response = requests.get(
         source_url,
@@ -39,7 +43,15 @@ def select_current_record(payload: Any) -> dict[str, Any]:
         for key in ("data", "records", "values", "items"):
             nested = payload.get(key)
             if isinstance(nested, list) and nested:
+                if key == "data" and is_measurement_list(nested):
+                    return payload
                 return select_current_record(nested)
         return payload
 
     raise ValueError("PV-Endpunkt muss ein JSON-Objekt oder eine Liste liefern")
+
+
+def is_measurement_list(items: list[Any]) -> bool:
+    """Erkennt eine Liste einzelner Messpunkte der Hochschul-API."""
+
+    return all(isinstance(item, dict) and "type" in item and "value" in item for item in items)

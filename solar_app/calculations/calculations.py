@@ -77,22 +77,124 @@ def calculate_period_total(records: list[dict[str, Any]], value_key: str, period
     return round(sum(totals_by_day.values()), 2)
 
 
+def timestamp_matches_period(timestamp: datetime, reference: datetime, period: str) -> bool:
+    """Prüft, ob ein Zeitpunkt zum gewünschten Auswertungszeitraum gehört."""
+
+    if period == "day":
+        return timestamp.date() == reference.date()
+    if period == "month":
+        return timestamp.year == reference.year and timestamp.month == reference.month
+    if period == "year":
+        return timestamp.year == reference.year
+    return False
+
+
+def calculate_integrated_energy(
+    records: list[dict[str, Any]],
+    power_key: str,
+    period: str,
+    max_gap_seconds: int = 300,
+) -> float:
+    """Schätzt Energie aus Leistungswerten und Zeitabständen."""
+
+    dated_records = sorted(
+        (
+            (timestamp, record)
+            for record in records
+            if (timestamp := parse_record_timestamp(record)) is not None
+        ),
+        key=lambda item: item[0],
+    )
+    if len(dated_records) < 2:
+        return 0.0
+
+    reference = dated_records[-1][0]
+    total_wh = 0.0
+
+    for (previous_time, previous_record), (current_time, current_record) in zip(
+        dated_records,
+        dated_records[1:],
+        strict=False,
+    ):
+        if not (
+            timestamp_matches_period(previous_time, reference, period)
+            and timestamp_matches_period(current_time, reference, period)
+        ):
+            continue
+
+        delta_seconds = (current_time - previous_time).total_seconds()
+        if delta_seconds <= 0 or delta_seconds > max_gap_seconds:
+            continue
+
+        previous_power = float(previous_record.get(power_key, 0))
+        current_power = float(current_record.get(power_key, 0))
+        average_power = (previous_power + current_power) / 2
+        total_wh += average_power * (delta_seconds / 3600)
+
+    return round(total_wh, 2)
+
+
+def calculate_period_energy(
+    records: list[dict[str, Any]],
+    value_key: str,
+    power_key: str,
+    period: str,
+) -> float:
+    """Nutzt Zählerwerte oder schätzt Energie aus Momentanleistung."""
+
+    direct_total = calculate_period_total(records, value_key, period)
+    if direct_total > 0:
+        return direct_total
+    return calculate_integrated_energy(records, power_key, period)
+
+
 def build_chart_points(records: list[dict[str, Any]], limit: int = 14) -> list[dict[str, Any]]:
     """Bereitet Messwerte für den Tagesverlauf im Dashboard vor."""
 
     points = []
-    for record in records[-limit:]:
+    visible_records = records[-limit:]
+    production_wh = 0.0
+    consumption_wh = 0.0
+    previous_timestamp = None
+    previous_record = None
+
+    for record in visible_records:
         timestamp = parse_record_timestamp(record)
+        if timestamp and previous_timestamp and previous_record:
+            delta_seconds = (timestamp - previous_timestamp).total_seconds()
+            if 0 < delta_seconds <= 300:
+                production_wh += (
+                    (
+                        float(previous_record.get("production_power_w", 0))
+                        + float(record.get("production_power_w", 0))
+                    )
+                    / 2
+                    * (delta_seconds / 3600)
+                )
+                consumption_wh += (
+                    (
+                        float(previous_record.get("consumption_power_w", 0))
+                        + float(record.get("consumption_power_w", 0))
+                    )
+                    / 2
+                    * (delta_seconds / 3600)
+                )
+
         label = timestamp.strftime("%H:%M") if timestamp else ""
+        direct_production_wh = float(record.get("daily_production_wh", 0))
+        direct_consumption_wh = float(record.get("daily_consumption_wh", 0))
         points.append(
             {
                 "label": label,
-                "daily_production_wh": float(record.get("daily_production_wh", 0)),
-                "daily_consumption_wh": float(record.get("daily_consumption_wh", 0)),
+                "daily_production_wh": direct_production_wh or round(production_wh, 2),
+                "daily_consumption_wh": direct_consumption_wh or round(consumption_wh, 2),
                 "production_power_w": float(record.get("production_power_w", 0)),
                 "consumption_power_w": float(record.get("consumption_power_w", 0)),
             }
         )
+        previous_timestamp = timestamp
+        previous_record = record
+
     return points
 
 
@@ -102,12 +204,24 @@ def calculate_dashboard_kpis(records: list[dict[str, Any]]) -> dict[str, Any]:
     latest = records[-1] if records else None
     latest_or_empty = latest or {}
 
-    daily_production_wh = calculate_period_total(records, "daily_production_wh", "day")
-    daily_consumption_wh = calculate_period_total(records, "daily_consumption_wh", "day")
-    monthly_production_wh = calculate_period_total(records, "daily_production_wh", "month")
-    monthly_consumption_wh = calculate_period_total(records, "daily_consumption_wh", "month")
-    yearly_production_wh = calculate_period_total(records, "daily_production_wh", "year")
-    yearly_consumption_wh = calculate_period_total(records, "daily_consumption_wh", "year")
+    daily_production_wh = calculate_period_energy(
+        records, "daily_production_wh", "production_power_w", "day"
+    )
+    daily_consumption_wh = calculate_period_energy(
+        records, "daily_consumption_wh", "consumption_power_w", "day"
+    )
+    monthly_production_wh = calculate_period_energy(
+        records, "daily_production_wh", "production_power_w", "month"
+    )
+    monthly_consumption_wh = calculate_period_energy(
+        records, "daily_consumption_wh", "consumption_power_w", "month"
+    )
+    yearly_production_wh = calculate_period_energy(
+        records, "daily_production_wh", "production_power_w", "year"
+    )
+    yearly_consumption_wh = calculate_period_energy(
+        records, "daily_consumption_wh", "consumption_power_w", "year"
+    )
 
     return {
         "record_count": len(records),

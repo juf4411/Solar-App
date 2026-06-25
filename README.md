@@ -26,6 +26,7 @@ Die Datei `.env` muss lokal vorhanden sein und die Datenquelle enthalten:
 PV_DATA_URL=https://jupyterhub-wi.rz.fh-ingolstadt.de:8443/data
 PV_API_KEY=hier_lokal_eintragen
 FETCH_INTERVAL_SECONDS=10
+PV_VERIFY_SSL=false
 ```
 
 Der API-Key bleibt nur lokal in `.env` und wird nicht ins Repository geschrieben.

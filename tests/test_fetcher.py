@@ -58,3 +58,15 @@ def test_select_current_record_uses_latest_list_entry():
     record = select_current_record({"data": [{"production_power_w": 1}, {"production_power_w": 2}]})
 
     assert record == {"production_power_w": 2}
+
+
+def test_select_current_record_keeps_thi_measurement_payload():
+    payload = {
+        "collected_at": "2026-06-25T12:00:00Z",
+        "data": [
+            {"type": "consumption", "value": 385914.875},
+            {"type": "generation", "value": 206000.03125},
+        ],
+    }
+
+    assert select_current_record(payload) == payload
