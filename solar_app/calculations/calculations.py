@@ -60,9 +60,15 @@ def calculate_period_total(records: list[dict[str, Any]], value_key: str, period
 
     totals_by_day: dict[str, float] = {}
     for timestamp, record in dated_records:
+        same_week = (
+            timestamp.isocalendar().year == reference.isocalendar().year
+            and timestamp.isocalendar().week == reference.isocalendar().week
+        )
         same_month = timestamp.year == reference.year and timestamp.month == reference.month
         same_year = timestamp.year == reference.year
 
+        if period == "week" and not same_week:
+            continue
         if period == "month" and not same_month:
             continue
         if period == "year" and not same_year:
@@ -82,6 +88,11 @@ def timestamp_matches_period(timestamp: datetime, reference: datetime, period: s
 
     if period == "day":
         return timestamp.date() == reference.date()
+    if period == "week":
+        return (
+            timestamp.isocalendar().year == reference.isocalendar().year
+            and timestamp.isocalendar().week == reference.isocalendar().week
+        )
     if period == "month":
         return timestamp.year == reference.year and timestamp.month == reference.month
     if period == "year":
@@ -210,6 +221,12 @@ def calculate_dashboard_kpis(records: list[dict[str, Any]]) -> dict[str, Any]:
     daily_consumption_wh = calculate_period_energy(
         records, "daily_consumption_wh", "consumption_power_w", "day"
     )
+    weekly_production_wh = calculate_period_energy(
+        records, "daily_production_wh", "production_power_w", "week"
+    )
+    weekly_consumption_wh = calculate_period_energy(
+        records, "daily_consumption_wh", "consumption_power_w", "week"
+    )
     monthly_production_wh = calculate_period_energy(
         records, "daily_production_wh", "production_power_w", "month"
     )
@@ -231,6 +248,8 @@ def calculate_dashboard_kpis(records: list[dict[str, Any]]) -> dict[str, Any]:
         "current_consumption_w": float(latest_or_empty.get("consumption_power_w", 0)),
         "daily_production_wh": daily_production_wh,
         "daily_consumption_wh": daily_consumption_wh,
+        "weekly_production_wh": weekly_production_wh,
+        "weekly_consumption_wh": weekly_consumption_wh,
         "monthly_production_wh": monthly_production_wh,
         "monthly_consumption_wh": monthly_consumption_wh,
         "yearly_production_wh": yearly_production_wh,
@@ -238,6 +257,22 @@ def calculate_dashboard_kpis(records: list[dict[str, Any]]) -> dict[str, Any]:
         "daily_pv_ratio_percent": calculate_pv_ratio(
             daily_production_wh,
             daily_consumption_wh,
+        ),
+        "weekly_pv_ratio_percent": calculate_pv_ratio(
+            weekly_production_wh,
+            weekly_consumption_wh,
+        ),
+        "weekly_grid_purchase_wh": round(
+            max(weekly_consumption_wh - weekly_production_wh, 0.0),
+            2,
+        ),
+        "weekly_feed_in_wh": round(
+            max(weekly_production_wh - weekly_consumption_wh, 0.0),
+            2,
+        ),
+        "weekly_autarky_percent": calculate_pv_ratio(
+            weekly_production_wh,
+            weekly_consumption_wh,
         ),
         "monthly_pv_ratio_percent": calculate_pv_ratio(
             monthly_production_wh,

@@ -29,6 +29,9 @@ def test_dashboard_page_loads(monkeypatch, tmp_path):
     assert "THI Energy Management Dashboard" in response.text
     assert "Direkt auslesbare Metriken" in response.text
     assert "Kumulierte Metriken" in response.text
+    assert "Wochenbilanz Netz" in response.text
+    assert "Serververbindung" in response.text
+    assert "localStorage.setItem" in response.text
     assert 'data-view="direct"' in response.text
     assert 'data-view="cumulative"' in response.text
     assert "thi-campus.jpg" in response.text
