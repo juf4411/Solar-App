@@ -51,11 +51,17 @@ def test_calculate_dashboard_kpis():
     assert kpis["current_consumption_w"] == 400.0
     assert kpis["daily_production_wh"] == 4000.0
     assert kpis["daily_consumption_wh"] == 8000.0
+    assert kpis["weekly_production_wh"] == 4000.0
+    assert kpis["weekly_consumption_wh"] == 8000.0
     assert kpis["monthly_production_wh"] == 4000.0
     assert kpis["monthly_consumption_wh"] == 8000.0
     assert kpis["yearly_production_wh"] == 4000.0
     assert kpis["yearly_consumption_wh"] == 8000.0
     assert kpis["daily_pv_ratio_percent"] == 50.0
+    assert kpis["weekly_pv_ratio_percent"] == 50.0
+    assert kpis["weekly_grid_purchase_wh"] == 4000.0
+    assert kpis["weekly_feed_in_wh"] == 0.0
+    assert kpis["weekly_autarky_percent"] == 50.0
     assert kpis["monthly_pv_ratio_percent"] == 50.0
     assert kpis["yearly_pv_ratio_percent"] == 50.0
     assert len(kpis["chart_points"]) == 2
@@ -78,6 +84,7 @@ def test_calculate_period_total_sums_daily_max_values():
     ]
 
     assert calculate_period_total(records, "daily_production_wh", "day") == 4000.0
+    assert calculate_period_total(records, "daily_production_wh", "week") == 6500.0
     assert calculate_period_total(records, "daily_production_wh", "month") == 6500.0
     assert calculate_period_total(records, "daily_production_wh", "year") == 6500.0
 

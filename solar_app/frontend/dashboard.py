@@ -23,7 +23,6 @@ DASHBOARD_TEMPLATE = """
 <html lang="de">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="refresh" content="{{ refresh_interval }}">
     <title>THI Solar Dashboard</title>
     <style>
       :root {
@@ -252,6 +251,29 @@ DASHBOARD_TEMPLATE = """
         border-bottom: 0;
       }
 
+      .status-grid {
+        display: grid;
+        gap: 14px;
+        margin-top: 20px;
+      }
+
+      .status-card {
+        padding: 16px;
+        background: rgba(5, 27, 28, 0.42);
+        border: 1px solid rgba(80, 177, 169, 0.28);
+        border-radius: 8px;
+      }
+
+      .status-card span {
+        color: var(--muted);
+      }
+
+      .status-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 24px;
+      }
+
       .bar {
         height: 6px;
         margin-top: 8px;
@@ -353,6 +375,46 @@ DASHBOARD_TEMPLATE = """
         display: flex;
         gap: 18px;
         color: var(--muted);
+      }
+
+      .legend-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 7px;
+        border-radius: 50%;
+        vertical-align: middle;
+      }
+
+      .legend-dot.production {
+        background: var(--cyan);
+      }
+
+      .legend-dot.consumption {
+        background: var(--yellow);
+      }
+
+      .network-summary {
+        display: grid;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(80, 177, 169, 0.28);
+      }
+
+      .network-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .network-row span {
+        color: var(--muted);
+      }
+
+      .network-row strong {
+        font-size: 20px;
       }
 
       .empty {
@@ -485,40 +547,19 @@ DASHBOARD_TEMPLATE = """
 
         <section class="panel periods">
           <h2>Live-Status</h2>
-          <div class="period-row">
-            <strong>Abruf</strong>
-            <div>
-              <span class="muted">Intervall</span>
-              <strong>{{ refresh_interval }} Sekunden</strong>
-              <div class="bar" style="--value: 100"><span></span></div>
+          <div class="status-grid">
+            <div class="status-card">
+              <span>Serververbindung</span>
+              <strong>{{ "Unterbrochen" if last_error else "Aktiv" }}</strong>
             </div>
-            <div>
-              <span class="muted">Datenstand</span>
-              <strong>{{ record_count }} Werte</strong>
-              <div class="bar yellow" style="--value: {{ 100 if record_count else 0 }}">
-                <span></span>
-              </div>
+            <div class="status-card">
+              <span>Aktualisierung</span>
+              <strong>alle {{ refresh_interval }} Sekunden</strong>
             </div>
-            <strong class="cyan">{{ "OK" if not last_error else "Prüfen" }}</strong>
-          </div>
-          <div class="period-row">
-            <strong>Heute</strong>
-            <div>
-              <span class="muted">PV-Erzeugung</span>
-              <strong>{{ "%.1f"|format(current_production_w / 1000) }} kW</strong>
-              <div class="bar" style="--value: {{ daily_ratio }}"><span></span></div>
+            <div class="status-card">
+              <span>Gespeicherte Messwerte</span>
+              <strong>{{ record_count }}</strong>
             </div>
-            <div>
-              <span class="muted">Verbrauch</span>
-              <strong>{{ "%.1f"|format(current_consumption_w / 1000) }} kW</strong>
-              <div
-                class="bar yellow"
-                style="--value: {{ 100 - daily_ratio if daily_ratio < 100 else 0 }}"
-              >
-                <span></span>
-              </div>
-            </div>
-            <strong class="cyan">{{ "%.1f"|format(daily_ratio) }}%</strong>
           </div>
         </section>
 
@@ -608,8 +649,8 @@ DASHBOARD_TEMPLATE = """
         <section class="panel chart">
           <h2>Tagesverlauf Erzeugung und Verbrauch</h2>
           <div class="chart-legend">
-            <span>● Tageserzeugung Wh</span>
-            <span>● Tagesverbrauch Wh</span>
+            <span><i class="legend-dot production"></i>Tageserzeugung Wh</span>
+            <span><i class="legend-dot consumption"></i>Tagesverbrauch Wh</span>
           </div>
           {% if production_line and consumption_line %}
             <svg viewBox="0 0 760 300" role="img" aria-label="Zeitverlauf der Tageswerte">
@@ -637,6 +678,21 @@ DASHBOARD_TEMPLATE = """
               </div>
             {% endfor %}
           </div>
+          <div class="network-summary">
+            <h3>Wochenbilanz Netz</h3>
+            <div class="network-row">
+              <span>Autarkie</span>
+              <strong class="cyan">{{ "%.1f"|format(weekly_autarky_percent) }}%</strong>
+            </div>
+            <div class="network-row">
+              <span>Energiebezug</span>
+              <strong>{{ "%.1f"|format(weekly_grid_purchase_wh / 1000) }} kWh</strong>
+            </div>
+            <div class="network-row">
+              <span>Einspeisung</span>
+              <strong>{{ "%.1f"|format(weekly_feed_in_wh / 1000) }} kWh</strong>
+            </div>
+          </div>
         </section>
       </section>
     </main>
@@ -644,21 +700,37 @@ DASHBOARD_TEMPLATE = """
       const buttons = document.querySelectorAll(".tab-button");
       const pages = document.querySelectorAll(".dashboard-page");
 
-      function showView(viewName) {
+      function showView(viewName, updateAddress = true) {
         buttons.forEach((button) => {
           button.classList.toggle("active", button.dataset.view === viewName);
         });
         pages.forEach((page) => {
           page.classList.toggle("active", page.dataset.page === viewName);
         });
-        window.location.hash = viewName === "cumulative" ? "kumuliert" : "direkt";
+        localStorage.setItem("solarDashboardView", viewName);
+
+        if (updateAddress) {
+          const url = new URL(window.location.href);
+          url.searchParams.set("ansicht", viewName === "cumulative" ? "kumuliert" : "direkt");
+          window.history.replaceState(null, "", url);
+        }
       }
 
       buttons.forEach((button) => {
         button.addEventListener("click", () => showView(button.dataset.view));
       });
 
-      showView(window.location.hash === "#kumuliert" ? "cumulative" : "direct");
+      const params = new URLSearchParams(window.location.search);
+      const requestedView = params.get("ansicht");
+      const storedView = localStorage.getItem("solarDashboardView");
+      const initialView =
+        requestedView === "kumuliert" || storedView === "cumulative" ? "cumulative" : "direct";
+
+      showView(initialView, false);
+
+      window.setTimeout(() => {
+        window.location.reload();
+      }, {{ refresh_interval }} * 1000);
     </script>
   </body>
 </html>
