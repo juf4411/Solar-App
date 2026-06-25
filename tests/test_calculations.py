@@ -1,6 +1,7 @@
 from solar_app.calculations.calculations import (
     calculate_average_power,
     calculate_dashboard_kpis,
+    calculate_integrated_energy,
     calculate_period_total,
     calculate_pv_ratio,
 )
@@ -79,3 +80,43 @@ def test_calculate_period_total_sums_daily_max_values():
     assert calculate_period_total(records, "daily_production_wh", "day") == 4000.0
     assert calculate_period_total(records, "daily_production_wh", "month") == 6500.0
     assert calculate_period_total(records, "daily_production_wh", "year") == 6500.0
+
+
+def test_calculate_integrated_energy_from_power_values():
+    records = [
+        {
+            "timestamp": "2026-06-07T12:00:00Z",
+            "production_power_w": 100.0,
+        },
+        {
+            "timestamp": "2026-06-07T12:01:00Z",
+            "production_power_w": 300.0,
+        },
+    ]
+
+    assert calculate_integrated_energy(records, "production_power_w", "day") == 3.33
+
+
+def test_dashboard_kpis_estimate_energy_when_counters_are_missing():
+    kpis = calculate_dashboard_kpis(
+        [
+            {
+                "timestamp": "2026-06-07T12:00:00Z",
+                "production_power_w": 100.0,
+                "consumption_power_w": 200.0,
+                "daily_production_wh": 0.0,
+                "daily_consumption_wh": 0.0,
+            },
+            {
+                "timestamp": "2026-06-07T12:01:00Z",
+                "production_power_w": 300.0,
+                "consumption_power_w": 400.0,
+                "daily_production_wh": 0.0,
+                "daily_consumption_wh": 0.0,
+            },
+        ]
+    )
+
+    assert kpis["daily_production_wh"] == 3.33
+    assert kpis["daily_consumption_wh"] == 5.0
+    assert kpis["daily_pv_ratio_percent"] == 66.6

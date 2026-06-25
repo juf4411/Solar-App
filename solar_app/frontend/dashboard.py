@@ -533,13 +533,23 @@ def get_fetch_interval_seconds() -> int:
     return max(int(os.getenv("FETCH_INTERVAL_SECONDS", "10")), 1)
 
 
+def ssl_verification_enabled() -> bool:
+    """Liest, ob HTTPS-Zertifikate geprüft werden sollen."""
+
+    return os.getenv("PV_VERIFY_SSL", "false").lower() in {"1", "true", "yes"}
+
+
 def collect_current_record(storage_path: str) -> None:
     """Holt einen Messwert vom Server und speichert ihn lokal."""
 
     source_url = os.getenv("PV_DATA_URL") or ""
     api_key = os.getenv("PV_API_KEY", "")
 
-    raw_record = fetch_current_pv_values(source_url, api_key)
+    raw_record = fetch_current_pv_values(
+        source_url,
+        api_key,
+        verify_ssl=ssl_verification_enabled(),
+    )
     cleaned_record = clean_pv_record(raw_record)
     save_record(cleaned_record, storage_path)
 
