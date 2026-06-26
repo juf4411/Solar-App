@@ -23,10 +23,10 @@ Das Dashboard zeigt PV-Daten der Hochschul-Anlage in einer Flask-Webanwendung. D
 Die Datenquelle wird über Umgebungsvariablen gesetzt.
 
 ```text
-PV_DATA_URL=https://jupyterhub-wi.rz.fh-ingolstadt.de:8443/data
+PV_DATA_URL=hier_lokal_eintragen
 PV_API_KEY=hier_lokal_eintragen
 FETCH_INTERVAL_SECONDS=10
 PV_VERIFY_SSL=false
 ```
 
-Der API-Key wird nur lokal in der Datei `.env` eingetragen und nicht ins Repository geschrieben.
+Server-URL und API-Key werden nur lokal in der Datei `.env` eingetragen und nicht ins Repository geschrieben.
