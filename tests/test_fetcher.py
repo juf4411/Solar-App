@@ -1,6 +1,12 @@
+from datetime import datetime
+
 import pytest
 
-from solar_app.data_fetcher.fetcher import fetch_current_pv_values, select_current_record
+from solar_app.data_fetcher.fetcher import (
+    add_collection_timestamp,
+    fetch_current_pv_values,
+    select_current_record,
+)
 
 
 class FakeResponse:
@@ -70,3 +76,19 @@ def test_select_current_record_keeps_thi_measurement_payload():
     }
 
     assert select_current_record(payload) == payload
+
+
+def test_add_collection_timestamp_marks_live_payload():
+    payload = {
+        "timestamp": "2026-06-29T15:00:58.992415+00:00",
+        "data": [
+            {"type": "consumption", "value": 385914.875},
+            {"type": "generation", "value": 206000.03125},
+        ],
+    }
+
+    record = add_collection_timestamp(payload)
+
+    assert record["timestamp"] == payload["timestamp"]
+    assert record["collected_at"] != payload["timestamp"]
+    datetime.fromisoformat(record["collected_at"])
