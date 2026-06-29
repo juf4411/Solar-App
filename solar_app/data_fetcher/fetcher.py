@@ -1,5 +1,6 @@
 """Ruft aktuelle PV-Werte von der Hochschul-URL ab."""
 
+from datetime import UTC, datetime
 from typing import Any
 
 import requests
@@ -28,7 +29,7 @@ def fetch_current_pv_values(
         verify=verify_ssl,
     )
     response.raise_for_status()
-    return select_current_record(response.json())
+    return add_collection_timestamp(select_current_record(response.json()))
 
 
 def select_current_record(payload: Any) -> dict[str, Any]:
@@ -55,3 +56,14 @@ def is_measurement_list(items: list[Any]) -> bool:
     """Erkennt eine Liste einzelner Messpunkte der Hochschul-API."""
 
     return all(isinstance(item, dict) and "type" in item and "value" in item for item in items)
+
+
+def add_collection_timestamp(record: dict[str, Any]) -> dict[str, Any]:
+    """Ergänzt bei THI-Livedaten den Zeitpunkt des tatsächlichen Abrufs."""
+
+    data = record.get("data")
+    if isinstance(data, list) and is_measurement_list(data):
+        enriched_record = dict(record)
+        enriched_record["collected_at"] = datetime.now(UTC).isoformat()
+        return enriched_record
+    return record
