@@ -1,22 +1,36 @@
 # Solar-App
 
-Grundgeruest fuer ein PV-Dashboard-Projekt.
+PV-Dashboard-Projekt für Solardaten der Hochschule.
 
-Ziel des Projekts ist eine App, die PV-Daten aus einer URL abruft, bereinigt, speichert, berechnet und in einem Dashboard darstellt. Dieses Repository ist bewusst als Startstruktur aufgebaut und noch keine fertige Produktiv-App.
+Ziel des Projekts ist eine App, die PV-Daten aus einer URL abruft, bereinigt, speichert, berechnet und in einem Dashboard darstellt. Der Server kann die Daten regelmäßig abrufen, solange die Anwendung läuft.
 
 ## Struktur
 
 ```text
+docs/               Spezifikation, Mockup, Aufgabenverteilung
 solar_app/
   backend/          Server-Startpunkt
-  data_fetcher/     Abruf der PV-Daten aus URL oder Mock-Daten
-  data_cleaning/    Bereinigung und Validierung der Rohdaten
-  data_storage/     Speicherung der Daten
   calculations/     KPIs und Kennzahlen
-  frontend/         Dashboard-Geruest mit Flask
+  data_cleaning/    Bereinigung und Validierung der Rohdaten
+  data_fetcher/     Abruf der PV-Daten aus der Hochschul-URL
+  data_storage/     Speicherung der Daten
+  frontend/         Dashboard mit Flask
 tests/              Unit- und Integrationtests
-docs/               Spezifikation, Mockup, Aufgabenverteilung
+
 ```
+
+## Konfiguration
+
+Die Datei `.env` muss lokal vorhanden sein und die Datenquelle enthalten:
+
+```text
+PV_DATA_URL=hier_lokal_eintragen
+PV_API_KEY=hier_lokal_eintragen
+FETCH_INTERVAL_SECONDS=10
+PV_VERIFY_SSL=false
+```
+
+Server-URL und API-Key bleiben nur lokal in `.env` und werden nicht ins Repository geschrieben.
 
 ## Lokal starten
 
@@ -47,7 +61,13 @@ py -m ruff check .
 ## Docker
 
 ```powershell
-docker compose up --build
+docker compose --env-file .env up --build
+```
+
+Dashboard:
+
+```text
+http://localhost:5000
 ```
 
 ## Dokumentation
@@ -55,3 +75,7 @@ docker compose up --build
 - `docs/DASHBOARD_SPEZIFIKATION.md`
 - `docs/AUFGABENVERTEILUNG.md`
 - `docs/dashboard-mockup.svg`
+
+## Mitarbeit
+
+Änderungen werden über Pull Requests eingebracht. Die wichtigsten Regeln stehen in `CONTRIBUTING.md`.
